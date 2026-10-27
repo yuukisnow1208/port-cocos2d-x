@@ -36,7 +36,6 @@ set(CMAKE_MODULE_PATH ${COCOS2DX_ROOT_PATH}/cmake/Modules/)
 
 # prevent in-source-build
 include(PreventInSourceBuilds)
-AssureOutOfSourceBuilds()
 
 # works before build libcocos2d
 include(CocosBuildSet)
@@ -45,10 +44,11 @@ include(CocosBuildSet)
 option(BUILD_TESTS "Build tests" ON)
 
 # default tests include lua, js test project, so we set those option on to build libs
-set(BUILD_LUA_LIBS ON)
-set(BUILD_JS_LIBS ON)
+option(BUILD_LUA_LIBS ON)
+option(BUILD_JS_LIBS ON)
 
 add_subdirectory(${COCOS2DX_ROOT_PATH}/cocos ${ENGINE_BINARY_PATH}/cocos/core)
+add_subdirectory(${COCOS2DX_ROOT_PATH}/cocos/platform/android ${ENGINE_BINARY_PATH}/cocos/android)
 
 # prevent tests project to build "cocos2d-x/cocos" again
 set(BUILD_ENGINE_DONE ON)

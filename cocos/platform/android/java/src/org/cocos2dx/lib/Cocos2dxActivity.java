@@ -63,7 +63,9 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
     // ===========================================================
     
     private Cocos2dxGLSurfaceView mGLSurfaceView = null;
-    private int[] mGLContextAttrs = null;
+    // krkr2Azure：子类 KR2Activity.onCreateView 需要读取 GL 上下文属性并复用
+    // EGLConfigChooser，原 private 会导致引擎 Activity 无法替换为带旁路输入的子类
+    protected int[] mGLContextAttrs = null;
     private Cocos2dxHandler mHandler = null;   
     private static Cocos2dxActivity sContext = null;
     private Cocos2dxVideoHelper mVideoHelper = null;
@@ -127,15 +129,12 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Workaround in https://stackoverflow.com/questions/16283079/re-launch-of-activity-on-home-button-but-only-the-first-time/16447508
-        if (!isTaskRoot()) {
-            // Android launched another instance of the root activity into an existing task
-            //  so just quietly finish and go away, dropping the user back into the activity
-            //  at the top of the stack (ie: the last state of this task)
-            finish();
-            Log.w(TAG, "[Workaround] Ignore the activity started from icon!");
-            return;
-        }
+        // 原 cocos workaround（!isTaskRoot() → finish()，见 stackoverflow 16283079）已移除：
+        // 上游把引擎 Activity 当作启动器（任务根），该 workaround 只为处理"从桌面图标
+        // 重复启动时系统在旧任务里重建根 Activity"的老 bug。本项目重构后任务根是
+        // Compose 外壳 LauncherActivity，引擎 Activity 由外壳显式拉起、永远不是任务根，
+        // 该分支每次都会 finish() 自己，且 KR2Activity.onDestroy 会 System.exit(0)
+        // 杀死整个进程，造成启动游戏闪退。
 
         this.hideVirtualButton();
 
@@ -380,7 +379,8 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
     // Inner and Anonymous Classes
     // ===========================================================
 
-    private class Cocos2dxEGLConfigChooser implements GLSurfaceView.EGLConfigChooser
+    // krkr2Azure：改为 protected，供 KR2Activity.onCreateView 复用
+    protected class Cocos2dxEGLConfigChooser implements GLSurfaceView.EGLConfigChooser
     {
         private int[] mConfigAttributes;
         private  final int EGL_OPENGL_ES2_BIT = 0x04;

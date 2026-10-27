@@ -1,7 +1,13 @@
 apply plugin: 'com.android.library'
 
 android {
+    // AGP 8 起必须显式声明 namespace（原由 AndroidManifest 的 package 属性提供）
+    namespace 'org.cocos2dx.lib'
     compileSdkVersion PROP_COMPILE_SDK_VERSION.toInteger()
+    // AGP 8 默认不再编译 AIDL，而本模块用到了 IGameTuningService.aidl
+    buildFeatures {
+        aidl true
+    }
 
     defaultConfig {
         minSdkVersion PROP_MIN_SDK_VERSION
